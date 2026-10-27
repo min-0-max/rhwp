@@ -1,6 +1,7 @@
 import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
 import { collectHostFontRequests } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
+import { initializeStudioStartup } from '@/core/studio-startup';
 import { installDocumentTitle } from '@/ui/document-title';
 import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
@@ -508,9 +509,13 @@ async function initialize(): Promise<void> {
     msg.textContent = extensionViewerSettings.disableExternalWebFonts
       ? '로컬 폰트 준비 중...'
       : '웹폰트 로딩 중...';
-    await loadWebFonts([], undefined, extensionViewerSettings);  // CSS @font-face 등록 + CRITICAL 폰트만 로드
-    msg.textContent = 'WASM 로딩 중...';
-    await wasm.initialize();
+    await initializeStudioStartup(
+      () => loadWebFonts([], undefined, extensionViewerSettings),
+      async () => {
+        msg.textContent = 'WASM 로딩 중...';
+        await wasm.initialize();
+      },
+    );
     if (import.meta.env.DEV) {
       initRhwpDev(wasm);
     }
