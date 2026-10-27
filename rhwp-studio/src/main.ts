@@ -59,6 +59,7 @@ import {
   isEmbedSwallowedFileShortcut,
   resolveChromeModeRequest,
 } from '@/ui/chrome-mode';
+import { updateProgressMessage } from '@/ui/load-progress';
 import { initRhwpDev } from '@/core/rhwp-dev';
 import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
@@ -469,8 +470,11 @@ function waitForNextPaint(): Promise<void> {
 
 async function updateLoadProgress(percent: number, label: string): Promise<void> {
   const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
-  sbMessage().textContent = `파일 로딩 ${safePercent}% - ${label}`;
-  await waitForNextPaint();
+  await updateProgressMessage(
+    sbMessage(),
+    `파일 로딩 ${safePercent}% - ${label}`,
+    waitForNextPaint,
+  );
 }
 
 /**
